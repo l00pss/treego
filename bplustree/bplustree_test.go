@@ -246,6 +246,89 @@ func TestLeafLinking(t *testing.T) {
 	}
 }
 
+func TestStaleSeparatorKeyAfterDelete(t *testing.T) {
+	tree := New[int, string](2)
+
+	tree.Insert(10, "ten")
+	tree.Insert(20, "twenty")
+	tree.Insert(30, "thirty")
+	tree.Insert(40, "forty")
+
+	tree.Delete(20)
+
+	tests := []struct {
+		key      int
+		expected string
+		found    bool
+	}{
+		{10, "ten", true},
+		{30, "thirty", true},
+		{40, "forty", true},
+		{20, "", false},
+		{15, "", false},
+		{25, "", false},
+		{35, "", false},
+	}
+
+	for _, tc := range tests {
+		value, found := tree.Search(tc.key)
+		if found != tc.found {
+			t.Errorf("Search(%d): expected found=%v, got=%v", tc.key, tc.found, found)
+		}
+		if found && value != tc.expected {
+			t.Errorf("Search(%d): expected value=%s, got=%s", tc.key, tc.expected, value)
+		}
+	}
+
+	result := tree.Range(10, 40)
+	if len(result) != 3 {
+		t.Errorf("Range(10, 40): expected 3 entries, got %d", len(result))
+	}
+
+	expectedKeys := []int{10, 30, 40}
+	for i, e := range result {
+		if e.Key != expectedKeys[i] {
+			t.Errorf("Range entry %d: expected key %d, got %d", i, expectedKeys[i], e.Key)
+		}
+	}
+}
+
+func TestDeleteFirstElementInLeaf(t *testing.T) {
+	tree := New[int, int](2)
+
+	for i := 1; i <= 10; i++ {
+		tree.Insert(i*10, i*10)
+	}
+
+	tree.Delete(50)
+
+	for i := 1; i <= 10; i++ {
+		if i == 5 {
+			continue
+		}
+		value, found := tree.Search(i * 10)
+		if !found || value != i*10 {
+			t.Errorf("Search(%d): expected %d, got %d, found=%v", i*10, i*10, value, found)
+		}
+	}
+
+	_, found := tree.Search(50)
+	if found {
+		t.Error("Search(50) should not find deleted key")
+	}
+
+	result := tree.Range(40, 70)
+	expected := []int{40, 60, 70}
+	if len(result) != len(expected) {
+		t.Errorf("Range(40, 70): expected %d entries, got %d", len(expected), len(result))
+	}
+	for i, e := range result {
+		if e.Key != expected[i] {
+			t.Errorf("Range entry %d: expected %d, got %d", i, expected[i], e.Key)
+		}
+	}
+}
+
 // === Edge Cases ===
 
 func TestDeleteSingleElement(t *testing.T) {
