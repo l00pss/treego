@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/l00pss/treego"
+	"github.com/l00pss/treego/btree"
 )
 
 func main() {
 	// Example 1: B-tree with integer keys and string values
 	fmt.Println("=== B-Tree with int keys and string values ===")
-	btreeIntString := treego.NewBTree[int, string](3)
+	btreeIntString := btree.NewBTree[int, string](3)
 
 	// Insert some data
 	data := map[int]string{
@@ -47,7 +47,7 @@ func main() {
 
 	// Example 2: B-tree with string keys and integer values
 	fmt.Println("\n=== B-Tree with string keys and int values ===")
-	btreeStringInt := treego.NewBTree[string, int](2)
+	btreeStringInt := btree.NewBTree[string, int](2)
 
 	fruits := map[string]int{
 		"apple":      5,
@@ -69,7 +69,7 @@ func main() {
 
 	// Example 3: Complex operations
 	fmt.Println("\n=== Complex Operations ===")
-	btree := treego.NewBTree[int, int](4)
+	btree := btree.NewBTree[int, int](4)
 
 	// Insert many values
 	for i := 1; i <= 50; i++ {

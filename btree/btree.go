@@ -1,4 +1,4 @@
-package treego
+package btree
 
 import (
 	"fmt"
