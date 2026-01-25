@@ -14,12 +14,14 @@ Generic tree data structures for Go. Built for real-world use.
 |---------|-------------|----------|
 | `btree` | Classic B-Tree | General purpose key-value storage |
 | `bplustree` | B+ Tree | Range queries, databases, sequential access |
+| `rtree` | R-Tree | Spatial indexing, nearest-neighbor, spatial queries |
 
 ## Installation
 
 ```bash
 go get github.com/l00pss/treego/btree
 go get github.com/l00pss/treego/bplustree
+go get github.com/l00pss/treego/rtree
 ```
 
 ## Quick Examples
@@ -65,6 +67,38 @@ for _, e := range tree.Range(5, 15) {
 tree.Delete(5)
 ```
 
+### R-Tree
+
+```go
+import "github.com/l00pss/treego/rtree"
+
+// Create an R-tree (minEntries, maxEntries)
+tree := rtree.NewRTree(2, 8)
+
+// Insert points/items
+tree.Insert(&rtree.Item{Bounds: rtree.NewPoint(10, 20), Data: "A"})
+tree.Insert(&rtree.Item{Bounds: rtree.NewPoint(15, 25), Data: "B"})
+tree.Insert(&rtree.Item{Bounds: rtree.NewPoint(30, 35), Data: "C"})
+
+// Search by rectangle
+found := tree.Search(rtree.NewRectangle(9, 19, 16, 26))
+for _, it := range found {
+  fmt.Println(it.Data)
+}
+
+// Search for items containing a point
+pointResults := tree.SearchPoint(rtree.Point{X: 10, Y: 20})
+for _, it := range pointResults {
+  fmt.Println(it.Data)
+}
+
+// Nearest neighbors (k nearest)
+nearest := tree.NearestNeighbor(rtree.Point{X: 12, Y: 22}, 2)
+for _, it := range nearest {
+  fmt.Println(it.Data)
+}
+```
+
 ## B-Tree vs B+ Tree
 
 | Feature | B-Tree | B+ Tree |
@@ -100,6 +134,18 @@ Delete(key) bool            // Remove key
 Range(start, end) []Entry   // Range query
 All() []Entry               // All items sorted
 Len() int                   // Count of items
+```
+
+### R-Tree
+
+```go
+NewRTree(minEntries, maxEntries) *RTree  // Create tree
+Insert(item *Item)                      // Add item with bounds
+Search(bounds Rectangle) []*Item        // Find items intersecting rectangle
+SearchPoint(p Point) []*Item            // Find items containing point
+NearestNeighbor(p Point, k int) []*Item // k nearest items
+Size() int                              // Count of items
+Height() int                            // Tree height
 ```
 
 ## Benchmarks
@@ -138,10 +184,10 @@ Tested on Apple M1 Pro.
 ## Running Tests
 
 ```bash
-go test ./btree/... ./bplustree/... -v
+go test ./btree/... ./bplustree/... ./rtree/... -v
 
 # Benchmarks
-go test ./btree/... ./bplustree/... -bench=. -benchmem
+go test ./btree/... ./bplustree/... ./rtree/... -bench=. -benchmem
 ```
 
 ## License
